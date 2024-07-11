@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "485708865796",
+    "project_id": "recomendica",
+    "storage_bucket": "recomendica.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:485708865796:android:fa790f01b563c78fbb7051",
+        "android_client_info": {
+          "package_name": "com.elfak.andjelanikolic"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvb-r2rk8mKnxvQgpghPLnW8ysOiRgnV0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
