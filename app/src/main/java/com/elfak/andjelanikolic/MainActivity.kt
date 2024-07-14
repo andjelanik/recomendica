@@ -14,7 +14,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.elfak.andjelanikolic.navigation.NavGraph
-import com.elfak.andjelanikolic.ui.theme.AndjelaNikolicTheme
 
 class MainActivity : ComponentActivity() {
     private lateinit var controller: NavHostController
@@ -22,10 +21,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            AndjelaNikolicTheme {
-                controller = rememberNavController()
-                NavGraph(controller = controller, start = "login_screen")
-            }
+            controller = rememberNavController()
+            NavGraph(controller = controller, start = "login_screen")
         }
     }
 }
