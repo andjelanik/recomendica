@@ -1,5 +1,11 @@
 package com.elfak.andjelanikolic.screens.register
 
+import android.content.Context
+import android.net.Uri
+import android.os.Environment
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,22 +31,31 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
 import androidx.core.graphics.ColorUtils
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.elfak.andjelanikolic.ui.theme.background
-import com.elfak.andjelanikolic.ui.theme.photo
 import com.elfak.andjelanikolic.ui.theme.primary
 import com.elfak.andjelanikolic.ui.theme.primaryTransparent
 import com.elfak.andjelanikolic.ui.theme.secondary
 import com.elfak.andjelanikolic.ui.theme.tertiary
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun RegisterScreen(controller: NavController) {
+    val context = LocalContext.current
     var email by remember {
         mutableStateOf("")
     }
@@ -53,6 +68,34 @@ fun RegisterScreen(controller: NavController) {
     var phone by remember {
         mutableStateOf("")
     }
+    var photo by remember {
+        mutableStateOf<Uri?>(null)
+    }
+    var file by remember {
+        mutableStateOf<File?>(null)
+    }
+    val imagePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = {
+            if (it != null) {
+                photo = it
+            }
+        }
+    )
+    val camera = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture(),
+        onResult = { success: Boolean ->
+            if (success) {
+                file?.let {
+                    photo = FileProvider.getUriForFile(
+                        context,
+                        "${context.packageName}.fileprovider",
+                        it
+                    )
+                }
+            }
+        }
+    )
 
     Column(modifier = Modifier
         .fillMaxSize()
@@ -63,20 +106,33 @@ fun RegisterScreen(controller: NavController) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Box(modifier = Modifier
-                .width(96.dp)
-                .height(96.dp)
-                .background(color = primaryTransparent, shape = CircleShape)
+            AsyncImage(
+                model = photo,
+                contentDescription = "Profile Picture",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .width(96.dp)
+                    .height(96.dp)
+                    .background(color = primaryTransparent, shape = CircleShape)
+                    .clip(CircleShape)
             )
             Row {
                 TextButton(onClick = {
-                    controller.popBackStack()
+                    imagePicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                 }, colors = ButtonColors(Color.Transparent, secondary, Color.Transparent, secondary)) {
                     Text(text = "Gallery", fontSize = 16.sp)
                 }
                 Spacer(modifier = Modifier.width(24.dp))
                 TextButton(onClick = {
-                    controller.popBackStack()
+                    file = createImageFile(context)
+                    val uri = file?.let {
+                        FileProvider.getUriForFile(
+                            context,
+                            "${context.packageName}.fileprovider",
+                            it
+                        )
+                    }
+                    uri?.let { camera.launch(it) }
                 }, colors = ButtonColors(Color.Transparent, secondary, Color.Transparent, secondary)) {
                     Text(text = "Camera", fontSize = 16.sp)
                 }
@@ -197,4 +253,14 @@ fun RegisterScreen(controller: NavController) {
         Spacer(modifier = Modifier.height(64.dp))
     }
 
+}
+
+fun createImageFile(context: Context): File {
+    val timeStamp = SimpleDateFormat("yyyyMMddHHmmss", Locale.US).format(Date())
+    val storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+    return File.createTempFile(
+        "JPEG${timeStamp}_",
+        ".jpg",
+        storageDir
+    )
 }

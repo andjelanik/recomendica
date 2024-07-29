@@ -1,5 +1,6 @@
 package com.elfak.andjelanikolic.screens.login
 
+import android.Manifest
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +25,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,9 +44,22 @@ import com.elfak.andjelanikolic.ui.theme.background
 import com.elfak.andjelanikolic.ui.theme.primary
 import com.elfak.andjelanikolic.ui.theme.primaryTransparent
 import com.elfak.andjelanikolic.ui.theme.tertiary
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun LoginScreen(controller: NavController) {
+    val permissions = rememberMultiplePermissionsState(
+        permissions = listOf(
+            Manifest.permission.CAMERA
+        )
+    )
+
+    LaunchedEffect(Unit) {
+        permissions.launchMultiplePermissionRequest()
+    }
+
     var email by remember {
         mutableStateOf("")
     }
