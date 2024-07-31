@@ -14,15 +14,22 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.elfak.andjelanikolic.navigation.NavGraph
+import com.elfak.andjelanikolic.repositories.AuthRepository
 
 class MainActivity : ComponentActivity() {
     private lateinit var controller: NavHostController
+    private val authRepository = AuthRepository()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             controller = rememberNavController()
-            NavGraph(controller = controller, start = "login_screen")
+            if (authRepository.current() != null) {
+                NavGraph(controller = controller, start = "home_screen")
+            } else {
+                NavGraph(controller = controller, start = "login_screen")
+            }
         }
     }
 }

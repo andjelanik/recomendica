@@ -25,6 +25,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import androidx.core.graphics.ColorUtils
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.elfak.andjelanikolic.ui.theme.background
@@ -56,21 +58,7 @@ import java.util.Locale
 @Composable
 fun RegisterScreen(controller: NavController) {
     val context = LocalContext.current
-    var email by remember {
-        mutableStateOf("")
-    }
-    var password by remember {
-        mutableStateOf("")
-    }
-    var fullName by remember {
-        mutableStateOf("")
-    }
-    var phone by remember {
-        mutableStateOf("")
-    }
-    var photo by remember {
-        mutableStateOf<Uri?>(null)
-    }
+    val registerViewModel = viewModel<RegisterViewModel>()
     var file by remember {
         mutableStateOf<File?>(null)
     }
@@ -78,7 +66,7 @@ fun RegisterScreen(controller: NavController) {
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = {
             if (it != null) {
-                photo = it
+                registerViewModel.photo = it
             }
         }
     )
@@ -87,7 +75,7 @@ fun RegisterScreen(controller: NavController) {
         onResult = { success: Boolean ->
             if (success) {
                 file?.let {
-                    photo = FileProvider.getUriForFile(
+                    registerViewModel.photo = FileProvider.getUriForFile(
                         context,
                         "${context.packageName}.fileprovider",
                         it
@@ -96,6 +84,20 @@ fun RegisterScreen(controller: NavController) {
             }
         }
     )
+
+    LaunchedEffect(registerViewModel.state) {
+        when (registerViewModel.state) {
+            is RegisterState.Success -> {
+                controller.navigate("home_screen") {
+                    popUpTo(controller.graph.startDestinationId) {
+                        inclusive = true
+                    }
+                    launchSingleTop = true
+                }
+            }
+            else -> { }
+        }
+    }
 
     Column(modifier = Modifier
         .fillMaxSize()
@@ -107,7 +109,7 @@ fun RegisterScreen(controller: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             AsyncImage(
-                model = photo,
+                model = registerViewModel.photo,
                 contentDescription = "Profile Picture",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -145,8 +147,29 @@ fun RegisterScreen(controller: NavController) {
         ) {
             Column {
                 OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
+                    value = registerViewModel.username,
+                    onValueChange = { registerViewModel.username = it },
+                    label = { Text("Username") },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = tertiary,
+                        unfocusedTextColor = tertiary,
+                        focusedContainerColor = background,
+                        unfocusedContainerColor = background,
+                        unfocusedLabelColor = tertiary,
+                        focusedLabelColor = tertiary,
+                        focusedBorderColor = tertiary,
+                        unfocusedBorderColor = tertiary
+                    ),
+                    textStyle = TextStyle.Default.copy(
+                        fontSize = 16.sp
+                    ),
+                    maxLines = 1
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                OutlinedTextField(
+                    value = registerViewModel.email,
+                    onValueChange = { registerViewModel.email = it },
                     label = { Text("Email") },
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -166,8 +189,8 @@ fun RegisterScreen(controller: NavController) {
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
+                    value = registerViewModel.password,
+                    onValueChange = { registerViewModel.password = it },
                     label = { Text("Password") },
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -187,8 +210,8 @@ fun RegisterScreen(controller: NavController) {
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
-                    value = fullName,
-                    onValueChange = { fullName = it },
+                    value = registerViewModel.fullName,
+                    onValueChange = { registerViewModel.fullName = it },
                     label = { Text("Full Name") },
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -208,8 +231,8 @@ fun RegisterScreen(controller: NavController) {
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
-                    value = phone,
-                    onValueChange = { phone = it },
+                    value = registerViewModel.phone,
+                    onValueChange = { registerViewModel.phone = it },
                     label = { Text("Phone Number") },
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -233,7 +256,7 @@ fun RegisterScreen(controller: NavController) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Button(onClick = {
-
+                    registerViewModel.register()
                 },
                     modifier = Modifier
                         .fillMaxWidth(),

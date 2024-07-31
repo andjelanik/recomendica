@@ -35,11 +35,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.elfak.andjelanikolic.R
+import com.elfak.andjelanikolic.screens.register.RegisterState
+import com.elfak.andjelanikolic.screens.register.RegisterViewModel
 import com.elfak.andjelanikolic.ui.theme.background
 import com.elfak.andjelanikolic.ui.theme.primary
 import com.elfak.andjelanikolic.ui.theme.primaryTransparent
@@ -50,6 +54,8 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun LoginScreen(controller: NavController) {
+    val loginViewModel = viewModel<LoginViewModel>()
+
     val permissions = rememberMultiplePermissionsState(
         permissions = listOf(
             Manifest.permission.CAMERA
@@ -60,16 +66,24 @@ fun LoginScreen(controller: NavController) {
         permissions.launchMultiplePermissionRequest()
     }
 
-    var email by remember {
-        mutableStateOf("")
-    }
-    var password by remember {
-        mutableStateOf("")
+    LaunchedEffect(loginViewModel.state) {
+        when (loginViewModel.state) {
+            is LoginState.Success -> {
+                controller.navigate("home_screen") {
+                    popUpTo(controller.graph.startDestinationId) {
+                        inclusive = true
+                    }
+                    launchSingleTop = true
+                }
+            }
+            else -> { }
+        }
     }
 
     Column(modifier = Modifier
         .fillMaxSize()
-        .background(background)
+        .background(background),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(256.dp))
         Row(
@@ -82,6 +96,7 @@ fun LoginScreen(controller: NavController) {
                 tint = tertiary
             )
         }
+        Text(text = "Recomendica", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = tertiary, fontStyle = FontStyle.Italic)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -89,8 +104,8 @@ fun LoginScreen(controller: NavController) {
         ) {
             Column {
                 OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
+                    value = loginViewModel.email,
+                    onValueChange = { loginViewModel.email = it },
                     label = { Text("Email") },
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -110,8 +125,8 @@ fun LoginScreen(controller: NavController) {
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
+                    value = loginViewModel.password,
+                    onValueChange = { loginViewModel.password = it },
                     label = { Text("Password") },
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -135,7 +150,7 @@ fun LoginScreen(controller: NavController) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Button(onClick = {
-
+                    loginViewModel.login()
                 },
                     modifier = Modifier
                         .fillMaxWidth(),
