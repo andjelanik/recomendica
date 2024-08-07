@@ -1,6 +1,8 @@
 package com.elfak.andjelanikolic.screens.login
 
 import android.Manifest
+import android.util.Patterns
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
@@ -33,10 +36,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -55,12 +61,16 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 @Composable
 fun LoginScreen(controller: NavController) {
     val loginViewModel = viewModel<LoginViewModel>()
-
+    val context = LocalContext.current
     val permissions = rememberMultiplePermissionsState(
         permissions = listOf(
             Manifest.permission.CAMERA
         )
     )
+
+    var valid by remember {
+        mutableStateOf(false)
+    }
 
     LaunchedEffect(Unit) {
         permissions.launchMultiplePermissionRequest()
@@ -69,6 +79,7 @@ fun LoginScreen(controller: NavController) {
     LaunchedEffect(loginViewModel.state) {
         when (loginViewModel.state) {
             is LoginState.Success -> {
+                loginViewModel.state = LoginState.Idle
                 controller.navigate("home_screen") {
                     popUpTo(controller.graph.startDestinationId) {
                         inclusive = true
@@ -76,8 +87,25 @@ fun LoginScreen(controller: NavController) {
                     launchSingleTop = true
                 }
             }
+            is LoginState.Error -> {
+                Toast.makeText(context, "Invalid email/password", Toast.LENGTH_LONG).show()
+            }
             else -> { }
         }
+    }
+
+    LaunchedEffect(loginViewModel.email, loginViewModel.password) {
+        if (!Patterns.EMAIL_ADDRESS.matcher(loginViewModel.email).matches()) {
+            valid = false
+            return@LaunchedEffect
+        }
+
+        if (loginViewModel.password.isEmpty()) {
+            valid = false
+            return@LaunchedEffect
+        }
+
+        valid = true
     }
 
     Column(modifier = Modifier
@@ -128,6 +156,8 @@ fun LoginScreen(controller: NavController) {
                     value = loginViewModel.password,
                     onValueChange = { loginViewModel.password = it },
                     label = { Text("Password") },
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = tertiary,
@@ -152,10 +182,11 @@ fun LoginScreen(controller: NavController) {
                 Button(onClick = {
                     loginViewModel.login()
                 },
+                    enabled = valid,
                     modifier = Modifier
                         .fillMaxWidth(),
                     contentPadding = PaddingValues(vertical = 16.dp),
-                    colors = ButtonColors(primary, tertiary, primary, tertiary)
+                    colors = ButtonColors(primary, tertiary, primary.copy(alpha = 0.6f), tertiary.copy(alpha = 0.6f))
                 ) {
                     Text(text = "Login", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 }

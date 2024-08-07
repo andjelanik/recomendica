@@ -3,6 +3,8 @@ package com.elfak.andjelanikolic.screens.register
 import android.content.Context
 import android.net.Uri
 import android.os.Environment
+import android.util.Patterns
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.OutlinedTextField
@@ -38,6 +41,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
@@ -85,6 +90,10 @@ fun RegisterScreen(controller: NavController) {
         }
     )
 
+    var valid by remember {
+        mutableStateOf(false)
+    }
+
     LaunchedEffect(registerViewModel.state) {
         when (registerViewModel.state) {
             is RegisterState.Success -> {
@@ -95,8 +104,25 @@ fun RegisterScreen(controller: NavController) {
                     launchSingleTop = true
                 }
             }
+            is RegisterState.Error -> {
+                Toast.makeText(context, "An error has occured", Toast.LENGTH_LONG).show()
+            }
             else -> { }
         }
+    }
+
+    LaunchedEffect(registerViewModel.username, registerViewModel.email, registerViewModel.password, registerViewModel.fullName, registerViewModel.phone, registerViewModel.photo) {
+        if (!Patterns.EMAIL_ADDRESS.matcher(registerViewModel.email).matches()) {
+            valid = false
+            return@LaunchedEffect
+        }
+
+        if (registerViewModel.username.isEmpty() ||  registerViewModel.password.isEmpty() || registerViewModel.fullName.isEmpty() || registerViewModel.phone.isEmpty() || registerViewModel.photo == null) {
+            valid = false
+            return@LaunchedEffect
+        }
+
+        valid = true
     }
 
     Column(modifier = Modifier
@@ -192,6 +218,8 @@ fun RegisterScreen(controller: NavController) {
                     value = registerViewModel.password,
                     onValueChange = { registerViewModel.password = it },
                     label = { Text("Password") },
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = tertiary,
@@ -258,10 +286,11 @@ fun RegisterScreen(controller: NavController) {
                 Button(onClick = {
                     registerViewModel.register()
                 },
+                    enabled = valid,
                     modifier = Modifier
                         .fillMaxWidth(),
                     contentPadding = PaddingValues(vertical = 16.dp),
-                    colors = ButtonColors(primary, tertiary, primary, tertiary)
+                    colors = ButtonColors(primary, tertiary, primary.copy(alpha = 0.6f), tertiary.copy(alpha = 0.6f))
                 ) {
                     Text(text = "Register", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 }
