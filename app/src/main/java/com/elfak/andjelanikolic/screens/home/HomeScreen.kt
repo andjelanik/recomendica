@@ -16,6 +16,7 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -34,7 +35,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.elfak.andjelanikolic.R
+import com.elfak.andjelanikolic.navigation.BottomBarGraph
 import com.elfak.andjelanikolic.repositories.AuthRepository
 import com.elfak.andjelanikolic.ui.theme.background
 import com.elfak.andjelanikolic.ui.theme.primary
@@ -43,30 +46,16 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 
 @Composable
 fun HomeScreen(controller: NavController) {
-    val authRepository = AuthRepository()
-
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .background(background)
-        .padding(top = 32.dp, start = 16.dp, end = 16.dp, bottom = 32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Button(onClick = {
-            authRepository.logout()
-            controller.navigate("login_screen") {
-                popUpTo(controller.graph.startDestinationId) {
-                    inclusive = true
-                }
-                launchSingleTop = true
-            }
-        },
-            modifier = Modifier
-                .fillMaxWidth(),
-            contentPadding = PaddingValues(vertical = 16.dp),
-            colors = ButtonColors(primary, tertiary, primary, tertiary)
+    val nestedController = rememberNavController()
+    Scaffold(
+        bottomBar = {
+            BottomBar(controller = nestedController)
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier.padding(bottom = padding.calculateBottomPadding())
         ) {
-            Text(text = "Logout", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            BottomBarGraph(controller = nestedController)
         }
     }
 }
