@@ -64,7 +64,10 @@ fun LoginScreen(controller: NavController) {
     val context = LocalContext.current
     val permissions = rememberMultiplePermissionsState(
         permissions = listOf(
-            Manifest.permission.CAMERA
+            Manifest.permission.CAMERA,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.POST_NOTIFICATIONS
         )
     )
 
