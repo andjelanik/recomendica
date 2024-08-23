@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.elfak.andjelanikolic.R
 import com.elfak.andjelanikolic.navigation.BottomBarGraph
@@ -55,7 +56,7 @@ fun HomeScreen(controller: NavController) {
         Column(
             modifier = Modifier.padding(bottom = padding.calculateBottomPadding())
         ) {
-            BottomBarGraph(controller = nestedController)
+            BottomBarGraph(controller = nestedController, topController = controller as NavHostController)
         }
     }
 }

@@ -7,5 +7,6 @@ data class User(
     val name: String = "",
     val avatar: String = "",
     val latitude: Float = 0f,
-    val longitude: Float = 0f
+    val longitude: Float = 0f,
+    val points: Int = 0
 )

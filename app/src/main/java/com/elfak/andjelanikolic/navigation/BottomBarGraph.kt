@@ -10,7 +10,7 @@ import com.elfak.andjelanikolic.screens.pins.PinsScreen
 import com.elfak.andjelanikolic.screens.profile.ProfileScreen
 
 @Composable
-fun BottomBarGraph(controller: NavHostController) {
+fun BottomBarGraph(controller: NavHostController, topController: NavHostController) {
     NavHost(
         navController = controller,
         startDestination = BottomBarScreen.Map.route
@@ -25,7 +25,7 @@ fun BottomBarGraph(controller: NavHostController) {
             LeaderboardScreen(controller = controller)
         }
         composable(route = BottomBarScreen.Profile.route) {
-            ProfileScreen(controller = controller)
+            ProfileScreen(controller = topController)
         }
     }
 }

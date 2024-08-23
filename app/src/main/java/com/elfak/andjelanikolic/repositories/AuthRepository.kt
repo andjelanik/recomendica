@@ -7,6 +7,11 @@ import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
 import com.elfak.andjelanikolic.models.Result
 import com.elfak.andjelanikolic.models.User
+import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.Query
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 
 class AuthRepository {
     private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
@@ -26,7 +31,7 @@ class AuthRepository {
             }
 
             result.user?.let {
-                val user = User(username, email, phone, name, url)
+                val user = User(username, email, phone, name, url, 0f, 0f, 0)
                 store.collection("users").document(it.uid).set(user).await()
             }
 
@@ -53,6 +58,43 @@ class AuthRepository {
         return null
     }
 
+    suspend fun getUserInfo(): Result<User?> {
+        return try {
+            val userId = auth.currentUser?.uid
+            if (userId != null) {
+                val snapshot = store.collection("users").document(userId).get().await()
+                val user = snapshot.toObject(User::class.java)
+                Result.Success(user)
+            } else {
+                Result.Error(Exception("No user is currently logged in"))
+            }
+        } catch (e: Exception) {
+            Result.Error(e)
+        }
+    }
+
+    fun fetch(): Flow<List<User>> = callbackFlow {
+        val query = store.collection("users")
+            .orderBy("points", Query.Direction.DESCENDING)
+
+        val listenerRegistration: ListenerRegistration = query.addSnapshotListener { snapshot, e ->
+            if (e != null) {
+                close(e)
+                return@addSnapshotListener
+            }
+
+            snapshot?.let {
+                val users = it.documents.mapNotNull { document ->
+                    document.toObject(User::class.java)
+                }
+                trySend(users)
+            }
+        }
+
+        awaitClose {
+            listenerRegistration.remove()
+        }
+    }
 
     fun logout() {
         this.auth.signOut()
