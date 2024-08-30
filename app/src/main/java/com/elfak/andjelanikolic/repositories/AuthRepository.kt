@@ -1,12 +1,14 @@
 package com.elfak.andjelanikolic.repositories
 
 import android.net.Uri
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
 import com.elfak.andjelanikolic.models.Result
 import com.elfak.andjelanikolic.models.User
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.channels.awaitClose
@@ -98,5 +100,14 @@ class AuthRepository {
 
     fun logout() {
         this.auth.signOut()
+    }
+
+    suspend fun points(user: String, amount: Int) {
+        try {
+            val userRef = store.collection("users").document(user)
+            userRef.update("points", FieldValue.increment(amount.toLong())).await()
+        } catch (e: Exception) {
+            Log.e("Firestore", "Failed to update points: ${e.message}")
+        }
     }
 }

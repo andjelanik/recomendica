@@ -19,6 +19,7 @@ class PinRepository {
     private val store: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
     private val storage: FirebaseStorage by lazy { FirebaseStorage.getInstance() }
     private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
+    private val authRepository = AuthRepository()
 
     suspend fun create(title: String, description: String, photo: Uri?, latitude: Float, longitude: Float): Result<Unit> {
         val user = getUserId()
@@ -38,6 +39,7 @@ class PinRepository {
                 store.collection("pins").add(pin)
                     .await()
 
+                authRepository.points(user, 100)
 
                 return Result.Success(Unit)
             } catch (e: Exception) {
