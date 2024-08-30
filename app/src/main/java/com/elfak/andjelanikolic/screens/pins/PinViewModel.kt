@@ -1,4 +1,4 @@
-package com.elfak.andjelanikolic.screens.map
+package com.elfak.andjelanikolic.screens.pins
 
 import android.content.Context
 import androidx.compose.runtime.getValue
@@ -12,12 +12,14 @@ import com.elfak.andjelanikolic.repositories.PinRepository
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
 
-class MapViewModel(context: Context) : ViewModel() {
+class PinViewModel(context: Context) : ViewModel() {
     private val locationRepository = LocationRepository(context)
     private val pinRepository = PinRepository()
 
-    var currentLocation by mutableStateOf<LatLng?>(null)
     var pins by mutableStateOf<List<Pin>>(emptyList())
+
+    var currentLocation by mutableStateOf<LatLng?>(null)
+        private set
 
     init {
         viewModelScope.launch {
@@ -31,13 +33,6 @@ class MapViewModel(context: Context) : ViewModel() {
         }
     }
 
-    private suspend fun fetchCurrentLocation() {
-        val location = locationRepository.getCurrentLocation()
-        location?.let {
-            currentLocation = LatLng(it.latitude, it.longitude)
-        }
-    }
-
     fun loadPins() {
         viewModelScope.launch {
             pinRepository.fetch().collect {
@@ -45,4 +40,14 @@ class MapViewModel(context: Context) : ViewModel() {
             }
         }
     }
+
+    private suspend fun fetchCurrentLocation() {
+        try {
+            val location = locationRepository.getCurrentLocation()
+            location?.let {
+                currentLocation = LatLng(it.latitude, it.longitude)
+            }
+        } catch (_: SecurityException) { }
+    }
+
 }

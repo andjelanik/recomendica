@@ -16,10 +16,10 @@ fun BottomBarGraph(controller: NavHostController, topController: NavHostControll
         startDestination = BottomBarScreen.Map.route
     ) {
         composable(route = BottomBarScreen.Map.route) {
-            MapScreen(controller = controller)
+            MapScreen(controller = controller, topController = topController)
         }
         composable(route = BottomBarScreen.Pins.route) {
-            PinsScreen(controller = controller)
+            PinsScreen(controller = controller, topController = topController)
         }
         composable(route = BottomBarScreen.Leaderboard.route) {
             LeaderboardScreen(controller = controller)

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
+import com.elfak.andjelanikolic.screens.create.CreateScreen
 import com.elfak.andjelanikolic.screens.home.HomeScreen
 import com.elfak.andjelanikolic.screens.login.LoginScreen
 import com.elfak.andjelanikolic.screens.register.RegisterScreen
@@ -23,6 +24,11 @@ fun NavGraph(controller: NavHostController, start: String) {
         }
         composable(route = "home_screen") {
             HomeScreen(controller = controller)
+        }
+        composable(route = "create_screen/{latitude}/{longitude}") {
+            val latitude = it.arguments?.getString("latitude")?.toFloatOrNull()
+            val longitude = it.arguments?.getString("longitude")?.toFloatOrNull()
+            CreateScreen(controller = controller, latitude = latitude, longitude = longitude)
         }
     }
 }
