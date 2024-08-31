@@ -1,10 +1,12 @@
 package com.elfak.andjelanikolic
 
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
+import android.location.Location
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -15,12 +17,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 class LocationService : Service() {
     private lateinit var locationRepository: LocationRepository
     private val firestore: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
     private val serviceScope = CoroutineScope(Dispatchers.Main)
+    private val notified = HashSet<String>()
 
     override fun onCreate() {
         super.onCreate()
@@ -63,6 +67,7 @@ class LocationService : Service() {
                             firestore.collection("users").document(userId)
                                 .update(locationData)
                         }
+                        checkForNearbyObjects(it.latitude, it.longitude)
                     }
                 }
             }
@@ -76,5 +81,52 @@ class LocationService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         serviceScope.cancel()
+    }
+
+    private suspend fun checkForNearbyObjects(userLat: Double, userLng: Double) {
+        val radius = 1000.0
+        val nearbyObjects = firestore.collection("pins").get().await()
+
+        for (document in nearbyObjects.documents) {
+            val objectId = document.id
+            val objectLat = document.getDouble("latitude") ?: continue
+            val objectLng = document.getDouble("longitude") ?: continue
+
+            if (notified.contains(objectId)) {
+                continue
+            }
+
+            val distance = calculateDistance(userLat, userLng, objectLat, objectLng)
+            if (distance <= radius) {
+                sendNotification("Pin found nearby!", "Pin ${document.getString("title")} is within $radius meters of your location.")
+                notified.add(objectId)
+            }
+        }
+    }
+
+    @SuppressLint("NotificationPermission")
+    private fun sendNotification(title: String, message: String) {
+        val channelId = "PinNotificationChannel"
+        val notificationId = 2
+
+        val channel = NotificationChannel(channelId, "Pin Notifications", NotificationManager.IMPORTANCE_HIGH)
+        val manager = getSystemService(NotificationManager::class.java)
+        manager?.createNotificationChannel(channel)
+
+        val notification: Notification = NotificationCompat.Builder(this, channelId)
+            .setContentTitle(title)
+            .setContentText(message)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .build()
+
+        with(manager) {
+            this?.notify(notificationId, notification)
+        }
+    }
+
+    private fun calculateDistance(startLat: Double, startLon: Double, endLat: Double, endLon: Double): Float {
+        val results = FloatArray(1)
+        Location.distanceBetween(startLat,startLon,endLat,endLon,results)
+        return results[0]
     }
 }
