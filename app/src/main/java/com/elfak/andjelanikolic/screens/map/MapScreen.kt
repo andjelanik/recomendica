@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -18,6 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.elfak.andjelanikolic.screens.filter.FilterViewModel
 import com.elfak.andjelanikolic.startLocationService
 import com.elfak.andjelanikolic.stopLocationService
 import com.elfak.andjelanikolic.ui.theme.primary
@@ -34,11 +36,11 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 
 @Composable
-fun MapScreen(controller: NavController, topController: NavController) {
+fun MapScreen(controller: NavController, topController: NavController, filterViewModel: FilterViewModel) {
     val cameraPositionState = rememberCameraPositionState()
 
     val context = LocalContext.current.applicationContext
-    val viewModelFactory = MapViewModelFactory(context)
+    val viewModelFactory = MapViewModelFactory(context, filterViewModel)
     val mapViewModel: MapViewModel = viewModel(factory = viewModelFactory)
     context.startLocationService()
 
@@ -86,6 +88,21 @@ fun MapScreen(controller: NavController, topController: NavController) {
                         snippet = pin.description
                     )
                 }
+            }
+            FloatingActionButton(
+                containerColor = primary,
+                modifier = Modifier
+                    .padding(end = 16.dp, bottom = 80.dp)
+                    .align(Alignment.BottomEnd),
+                onClick = {
+                    topController.navigate("filter_screen")
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Search,
+                    contentDescription = "Create",
+                    tint = tertiary
+                )
             }
             FloatingActionButton(
                 containerColor = primary,

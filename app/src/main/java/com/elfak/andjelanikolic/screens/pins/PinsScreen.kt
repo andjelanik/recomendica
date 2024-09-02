@@ -34,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import coil.compose.AsyncImage
+import com.elfak.andjelanikolic.screens.filter.FilterViewModel
 import com.elfak.andjelanikolic.ui.theme.backgroundDarker
 import com.elfak.andjelanikolic.ui.theme.primary
 import com.elfak.andjelanikolic.ui.theme.primaryTransparent
@@ -41,8 +42,8 @@ import com.elfak.andjelanikolic.ui.theme.secondary
 import com.elfak.andjelanikolic.ui.theme.tertiary
 
 @Composable
-fun PinsScreen(controller: NavController, topController: NavController) {
-    val viewModelFactory = PinViewModelFactory(LocalContext.current.applicationContext)
+fun PinsScreen(controller: NavController, topController: NavController, filterViewModel: FilterViewModel) {
+    val viewModelFactory = PinViewModelFactory(LocalContext.current.applicationContext, filterViewModel)
     val pinViewModel: PinViewModel = viewModel(factory = viewModelFactory)
 
     LaunchedEffect(Unit) {
@@ -91,6 +92,21 @@ fun PinsScreen(controller: NavController, topController: NavController) {
                 }
                 Spacer(modifier = Modifier.height(16.dp))
             }
+        }
+        FloatingActionButton(
+            containerColor = primary,
+            modifier = Modifier
+                .padding(end = 16.dp, bottom = 80.dp)
+                .align(Alignment.BottomEnd),
+            onClick = {
+                topController.navigate("filter_screen")
+            }
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Search,
+                contentDescription = "Create",
+                tint = tertiary
+            )
         }
         FloatingActionButton(
             containerColor = primary,

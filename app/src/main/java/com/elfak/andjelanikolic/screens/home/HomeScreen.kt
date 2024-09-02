@@ -40,13 +40,14 @@ import androidx.navigation.compose.rememberNavController
 import com.elfak.andjelanikolic.R
 import com.elfak.andjelanikolic.navigation.BottomBarGraph
 import com.elfak.andjelanikolic.repositories.AuthRepository
+import com.elfak.andjelanikolic.screens.filter.FilterViewModel
 import com.elfak.andjelanikolic.ui.theme.background
 import com.elfak.andjelanikolic.ui.theme.primary
 import com.elfak.andjelanikolic.ui.theme.tertiary
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 
 @Composable
-fun HomeScreen(controller: NavController) {
+fun HomeScreen(controller: NavController, filterViewModel: FilterViewModel) {
     val nestedController = rememberNavController()
     Scaffold(
         bottomBar = {
@@ -56,7 +57,7 @@ fun HomeScreen(controller: NavController) {
         Column(
             modifier = Modifier.padding(bottom = padding.calculateBottomPadding())
         ) {
-            BottomBarGraph(controller = nestedController, topController = controller as NavHostController)
+            BottomBarGraph(controller = nestedController, topController = controller as NavHostController, filterViewModel = filterViewModel)
         }
     }
 }

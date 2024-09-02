@@ -123,10 +123,4 @@ class LocationService : Service() {
             this?.notify(notificationId, notification)
         }
     }
-
-    private fun calculateDistance(startLat: Double, startLon: Double, endLat: Double, endLon: Double): Float {
-        val results = FloatArray(1)
-        Location.distanceBetween(startLat,startLon,endLat,endLon,results)
-        return results[0]
-    }
 }
