@@ -13,6 +13,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -44,9 +48,13 @@ fun MapScreen(controller: NavController, topController: NavController, filterVie
     val mapViewModel: MapViewModel = viewModel(factory = viewModelFactory)
     context.startLocationService()
 
+    var gotLocation by remember { mutableStateOf(false) }
     LaunchedEffect(mapViewModel.currentLocation) {
-        mapViewModel.currentLocation?.let {
-            cameraPositionState.position = CameraPosition.fromLatLngZoom(it, 15f)
+        if (!gotLocation) {
+            mapViewModel.currentLocation?.let {
+                cameraPositionState.position = CameraPosition.fromLatLngZoom(it, 15f)
+                gotLocation = true
+            }
         }
     }
 
